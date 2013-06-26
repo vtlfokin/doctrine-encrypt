@@ -145,21 +145,10 @@ class DoctrineEncryptSubscriber implements EventSubscriber
             if ($this->annReader->getPropertyAnnotation($refProperty, self::ENCRYPTED_ANN_NAME)) {
                 $withAnnotation = true;
                 // we have annotation and if it decrypt operation, we must avoid duble decryption
-                $propName = $refProperty->getName();
-                if ($refProperty->isPublic()) {
-                    $entity->$propName = $this->encryptor->$encryptorMethod($refProperty->getValue());
-                } else {
-                    $methodName = self::capitalize($propName);
-                    if ($reflectionClass->hasMethod($getter = 'get' . $methodName) && $reflectionClass->hasMethod($setter = 'set' . $methodName)) {
-                        $currentPropValue = $this->encryptor->$encryptorMethod($entity->$getter());
-                        $entity->$setter($currentPropValue);
-                    } else {
-                        $refProperty->setAccessible(true);
-                        $value = $refProperty->getValue($entity);
-                        $value = $this->encryptor->$encryptorMethod($value);
-                        $refProperty->setValue($entity, $value);
-                    }
-                }
+                $refProperty->setAccessible(true);
+                $value = $refProperty->getValue($entity);
+                $value = $this->encryptor->$encryptorMethod($value);
+                $refProperty->setValue($entity, $value);
             }
         }
         
