@@ -6,7 +6,7 @@ Package encrypts and decrypts Doctrine fields through life cycle events.
 
 The bulk of the documentation is stored in the `Resources/doc/index.md` file in this bundle
 
-[Read the Documentation](https://github.com/rjkip/DoctrineEncrypt/blob/master/Resources/doc/index.md)
+[Read the Documentation](https://github.com/reprovinci/doctrine-encrypt/blob/master/Resources/doc/index.md)
 
 ### License
 
