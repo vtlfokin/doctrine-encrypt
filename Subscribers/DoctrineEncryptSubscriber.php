@@ -154,7 +154,10 @@ class DoctrineEncryptSubscriber implements EventSubscriber
                         $currentPropValue = $this->encryptor->$encryptorMethod($entity->$getter());
                         $entity->$setter($currentPropValue);
                     } else {
-                        throw new \RuntimeException(sprintf("Property %s isn't public and doesn't has getter/setter"));
+                        $refProperty->setAccessible(true);
+                        $value = $refProperty->getValue($entity);
+                        $value = $this->encryptor->$encryptorMethod($value);
+                        $refProperty->setValue($entity, $value);
                     }
                 }
             }
