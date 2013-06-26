@@ -2,13 +2,15 @@
 
 namespace Reprovinci\DoctrineEncrypt\Subscribers;
 
-use Doctrine\ORM\Events;
+use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\EventSubscriber;
+
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
-use Doctrine\Common\Annotations\Reader;
-use \Doctrine\ORM\EntityManager;
-use \ReflectionClass;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Events;
+
+use ReflectionClass;
 
 /**
  * Doctrine event subscriber which encrypt/decrypt entities
