@@ -2,16 +2,71 @@
 
 Package encrypts and decrypts Doctrine fields through life cycle events.
 
-### Documentation
+## Installation
+Add `reprovinci/doctrine-encrypt` to your Composer manifest.
 
-The bulk of the documentation is stored in the `Resources/doc/index.md` file in this bundle
+```js
+{
+    "require": {
+        "reprovinci/doctrine-encrypt": "~3.0"
+    }
+}
+```
 
-[Read the Documentation](https://github.com/reprovinci/doctrine-encrypt/blob/master/Resources/doc/index.md)
+## Configuration
+Add the event subscriber to your entity manager's event manager. Assuming `$em` is your configured entity manager:
 
-### License
+```php
+<?php
+
+# You should pick your own hexadecimal secret
+$secret = pack("H*", "dda8e5b978e05346f08b312a8c2eac03670bb5661097f8bc13212c31be66384c");
+
+$subscriber = new DoctrineEncryptSubscriber(
+    new \Doctrine\Common\Annotations\AnnotationReader,
+    new \Reprovinci\DoctrineEncrypt\Encryptors\AES256Encryptor($secret)
+);
+
+$eventManager = $em->getEventManager();
+$eventManager->addEventSubscriber($encrypt_subscriber);
+```
+
+## Usage
+```php
+<?php
+
+namespace Your\Namespace;
+
+use Doctrine\ORM\Mapping as ORM;
+
+use Reprovinci\DoctrineEncrypt\Configuration\Encrypted;
+
+/**
+ * @ORM\Entity
+ */
+class Entity
+{
+    /**
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="AUTO")
+     * @ORM\Column(type="integer")
+     * @var int
+     */
+    protected $id;
+
+    /**
+     * @ORM\Column(type="text")
+     * @Encrypted
+     * @var string
+     */
+    protected $secret_data;
+}
+```
+
+## License
 
 This bundle is under the MIT license. See the complete license in the bundle
 
-### Versions
+## Versions
 
 I'm using Semantic Versioning like described [here](http://semver.org).
