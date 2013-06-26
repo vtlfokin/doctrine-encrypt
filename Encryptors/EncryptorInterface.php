@@ -7,8 +7,8 @@ namespace Reprovinci\DoctrineEncrypt\Encryptors;
  * 
  * @author Victor Melnik <melnikvictorl@gmail.com>
  */
-interface EncryptorInterface {
-
+interface EncryptorInterface
+{
     /**
      * Must accept secret key for encryption 
      */

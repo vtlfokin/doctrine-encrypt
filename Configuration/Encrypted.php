@@ -8,6 +8,7 @@ namespace Reprovinci\DoctrineEncrypt\Configuration;
  * @author Victor Melnik <melnikvictorl@gmail.com>
  * @Annotation
  */
-class Encrypted {
+class Encrypted
+{
     // some parameters will be added
 }
