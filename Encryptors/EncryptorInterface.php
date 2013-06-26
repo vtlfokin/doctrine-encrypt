@@ -10,11 +10,6 @@ namespace Reprovinci\DoctrineEncrypt\Encryptors;
 interface EncryptorInterface
 {
     /**
-     * Must accept secret key for encryption 
-     */
-    public function __construct($secretKey);
-
-    /**
      * Must accept data and return encrypted data 
      */
     public function encrypt($data);

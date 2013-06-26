@@ -10,6 +10,8 @@ use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Events;
 
+use Reprovinci\DoctrineEncrypt\Encryptors\EncryptorInterface;
+
 use ReflectionClass;
 
 /**
@@ -47,13 +49,13 @@ class DoctrineEncryptSubscriber implements EventSubscriber
 
     /**
      * Initialization of subscriber
-     * @param string $encryptorClass
-     * @param string $secretKey
+     * @param Reader $annReader
+     * @param EncryptorInterface $encryptor
      */
-    public function __construct(Reader $annReader, $encryptorClass, $secretKey)
+    public function __construct(Reader $annReader, EncryptorInterface $encryptor)
     {
         $this->annReader = $annReader;
-        $this->encryptor = $this->encryptorFactory($encryptorClass, $secretKey);
+        $this->encryptor = $encryptor;
     }
 
     /**
@@ -159,23 +161,6 @@ class DoctrineEncryptSubscriber implements EventSubscriber
         }
         
         return $withAnnotation;
-    }
-    
-    /**
-     * Encryptor factory. Checks and create needed encryptor
-     * @param string $classFullName Encryptor namespace and name
-     * @param string $secretKey Secret key for encryptor
-     * @return EncryptorInterface
-     * @throws \RuntimeException 
-     */
-    private function encryptorFactory($classFullName, $secretKey)
-    {
-        $refClass = new \ReflectionClass($classFullName);
-        if ($refClass->implementsInterface(self::ENCRYPTOR_INTERFACE_NS)) {
-            return new $classFullName($secretKey);
-        } else {
-            throw new \RuntimeException('Encryptor must implements interface EncryptorInterface');
-        }
     }
     
     /**
