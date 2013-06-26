@@ -1,12 +1,12 @@
 {
-    "name": "vmelnik/doctrine-encrypt-bundle",
+    "name": "reprovinci/doctrine-encrypt",
     "type": "library",
     "keywords": ["doctrine", "aes256", "encrypt", "decrypt"],
     "license": "MIT",
-    "description": "Symfony 2 bundle which allows to encrypt data in database with some encrypt algorithm",
+    "description": "Package encrypts and decrypts Doctrine fields through life cycle events.",
     "require": {
         "php": ">=5.3.2",
-        "symfony/framework-bundle": ">=2.0",
+        "doctrine/orm": "~2.0",
         "ext-mcrypt": "*"
     },
     "autoload": {
