@@ -1,6 +1,6 @@
 <?php
 
-namespace VMelnik\DoctrineEncryptBundle\Configuration;
+namespace Reprovinci\DoctrineEncrypt\Configuration;
 
 /**
  * The Encrypted class handles the @Encrypted annotation.

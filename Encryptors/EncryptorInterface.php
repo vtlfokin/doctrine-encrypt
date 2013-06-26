@@ -1,6 +1,6 @@
 <?php
 
-namespace VMelnik\DoctrineEncryptBundle\Encryptors;
+namespace Reprovinci\DoctrineEncrypt\Encryptors;
 
 /**
  * Encryptor interface for encryptors

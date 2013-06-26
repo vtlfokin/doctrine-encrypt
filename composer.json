@@ -10,9 +10,9 @@
         "ext-mcrypt": "*"
     },
     "autoload": {
-        "psr-0": { "VMelnik\\DoctrineEncryptBundle": "" }
+        "psr-0": { "Reprovinci\\DoctrineEncrypt": "" }
     },
-    "target-dir": "VMelnik/DoctrineEncryptBundle",
+    "target-dir": "Reprovinci/DoctrineEncrypt",
     "authors": [
         {
             "name": "Victor Melnik",

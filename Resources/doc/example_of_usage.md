@@ -20,7 +20,7 @@ namespace Acme\DemoBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 // importing @Encrypted annotation
-use VMelnik\DoctrineEncryptBundle\Configuration\Encrypted;
+use Reprovinci\DoctrineEncrypt\Configuration\Encrypted;
 
 /**
  * @ORM\Entity

@@ -35,7 +35,7 @@ public function registerBundles()
 {
     $bundles = array(
         // ...
-        new VMelnik\DoctrineEncryptBundle\VMelnikDoctrineEncryptBundle(),
+        new Reprovinci\DoctrineEncrypt\VMelnikDoctrineEncryptBundle(),
     );
 }
 ```
