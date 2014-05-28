@@ -148,6 +148,8 @@ class DoctrineEncryptSubscriber implements EventSubscriber
 
                 $field->setValue($entity, $fieldPair['value']);
             }
+
+            $this->addToDecodedRegistry($entity);
         }
 
         unset($this->postFlushDecryptQueue);
@@ -163,9 +165,9 @@ class DoctrineEncryptSubscriber implements EventSubscriber
         $entity = $args->getEntity();
         $em = $args->getEntityManager();
 
-        if(!$this->hasInDecodedRegistry($entity, $args->getEntityManager())) {
+        if(!$this->hasInDecodedRegistry($entity)) {
             if($this->processFields($entity, $em, false)) {
-                $this->addToDecodedRegistry($entity, $args->getEntityManager());
+                $this->addToDecodedRegistry($entity);
             }
         }
     }
@@ -224,29 +226,20 @@ class DoctrineEncryptSubscriber implements EventSubscriber
     /**
      * Check if we have entity in decoded registry
      * @param Object $entity Some doctrine entity
-     * @param \Doctrine\ORM\EntityManager $em
      * @return boolean
      */
-    private function hasInDecodedRegistry($entity, EntityManager $em)
+    private function hasInDecodedRegistry($entity)
     {
-        $className = get_class($entity);
-        $metadata = $em->getClassMetadata($className);
-        $getter = 'get' . self::capitalize($metadata->getIdentifier());
-
-        return isset($this->decodedRegistry[$className][$entity->$getter()]);
+        return isset($this->decodedRegistry[spl_object_hash($entity)]);
     }
     
     /**
      * Adds entity to decoded registry
      * @param object $entity Some doctrine entity
-     * @param \Doctrine\ORM\EntityManager $em
      */
-    private function addToDecodedRegistry($entity, EntityManager $em)
+    private function addToDecodedRegistry($entity)
     {
-        $className = get_class($entity);
-        $metadata = $em->getClassMetadata($className);
-        $getter = 'get' . self::capitalize($metadata->getIdentifier());
-        $this->decodedRegistry[$className][$entity->$getter()] = true;
+        $this->decodedRegistry[spl_object_hash($entity)] = true;
     }
 
 
