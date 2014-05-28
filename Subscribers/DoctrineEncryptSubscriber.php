@@ -6,7 +6,6 @@ use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\EventSubscriber;
 
 use Doctrine\ORM\Event\LifecycleEventArgs;
-use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Events;
@@ -80,10 +79,8 @@ class DoctrineEncryptSubscriber implements EventSubscriber
 
         $properties = $this->getEncryptedFields($entity, $em);
         foreach ($properties as $refProperty) {
-            if ($this->annReader->getPropertyAnnotation($refProperty, self::ENCRYPTED_ANN_NAME)) {
-                $propName = $refProperty->getName();
-                $args->setNewValue($propName, $this->encryptor->encrypt($args->getNewValue($propName)));
-            }
+            $propName = $refProperty->getName();
+            $args->setNewValue($propName, $this->encryptor->encrypt($args->getNewValue($propName)));
         }
     }
     
@@ -141,23 +138,19 @@ class DoctrineEncryptSubscriber implements EventSubscriber
     {
         $properties = $this->getEncryptedFields($entity, $em);
 
-        $withAnnotation = false;
         foreach ($properties as $refProperty) {
-            if ($this->annReader->getPropertyAnnotation($refProperty, self::ENCRYPTED_ANN_NAME)) {
-                $withAnnotation = true;
-                // we have annotation and if it decrypt operation, we must avoid duble decryption
-                $refProperty->setAccessible(true);
-                $value = $refProperty->getValue($entity);
+            // we have annotation and if it decrypt operation, we must avoid duble decryption
+            $refProperty->setAccessible(true);
+            $value = $refProperty->getValue($entity);
 
-                $value = $isEncryptOperation?
-                    $this->encryptor->encrypt($value) :
-                    $this->encryptor->decrypt($value);
+            $value = $isEncryptOperation?
+                $this->encryptor->encrypt($value) :
+                $this->encryptor->decrypt($value);
 
-                $refProperty->setValue($entity, $value);
-            }
+            $refProperty->setValue($entity, $value);
         }
         
-        return $withAnnotation;
+        return !empty($properties);
     }
     
     /**
