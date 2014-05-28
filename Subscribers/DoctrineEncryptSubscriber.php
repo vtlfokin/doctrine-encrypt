@@ -6,6 +6,8 @@ use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\EventSubscriber;
 
 use Doctrine\ORM\Event\LifecycleEventArgs;
+use Doctrine\ORM\Event\OnFlushEventArgs;
+use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Events;
@@ -56,6 +58,14 @@ class DoctrineEncryptSubscriber implements EventSubscriber
     private $encryptedFieldCache = array();
 
     /**
+     * Before flushing the objects out to the database, we modify their password value to the
+     * encrypted value. Since we want the password to remain decrypted on the entity after a flush,
+     * we have to write the decrypted value back to the entity.
+     * @var array
+     */
+    private $postFlushDecryptQueue;
+
+    /**
      * Initialization of subscriber
      * @param Reader $annReader
      * @param EncryptorInterface $encryptor
@@ -67,23 +77,82 @@ class DoctrineEncryptSubscriber implements EventSubscriber
     }
 
     /**
-     * Listen a preUpdate lifecycle event. Checking and encrypt entities fields
-     * which have @Encrypted annotation. Using changesets to avoid preUpdate event
-     * restrictions
-     * @param LifecycleEventArgs $args 
+     * Encrypt the password before it is written to the database.
+     *
+     * Notice that we do not recalculate changes otherwise the password will be written
+     * every time (Because it is going to differ from the un-encrypted value)
+     *
+     * @param OnFlushEventArgs $args
      */
-    public function preUpdate(PreUpdateEventArgs $args)
+    public function onFlush(OnFlushEventArgs $args)
     {
         $em = $args->getEntityManager();
-        $entity = $args->getEntity();
+        $unitOfWork = $em->getUnitOfWork();
 
-        $properties = $this->getEncryptedFields($entity, $em);
-        foreach ($properties as $refProperty) {
-            $propName = $refProperty->getName();
-            $args->setNewValue($propName, $this->encryptor->encrypt($args->getNewValue($propName)));
+        $this->postFlushDecryptQueue = array();
+
+        foreach ($unitOfWork->getScheduledEntityInsertions() as $entity) {
+            $this->entityOnFlush($entity, $em);
+            $unitOfWork->recomputeSingleEntityChangeSet($em->getClassMetadata(get_class($entity)), $entity);
+        }
+
+        foreach ($unitOfWork->getScheduledEntityUpdates() as $entity) {
+            $this->entityOnFlush($entity, $em);
+            $unitOfWork->recomputeSingleEntityChangeSet($em->getClassMetadata(get_class($entity)), $entity);
         }
     }
-    
+
+
+    /**
+     * Processes the entity for an onFlush event.
+     *
+     * @param object $entity
+     * @param EntityManager $em
+     */
+    private function entityOnFlush($entity, EntityManager $em)
+    {
+        $objId = spl_object_hash($entity);
+
+        $fields = array();
+        foreach($this->getEncryptedFields($entity, $em) as $field) {
+            $fields[$field->getName()] = array (
+                'field' => $field,
+                'value' => $field->getValue($entity)
+            );
+        }
+
+        $this->postFlushDecryptQueue[$objId] = array(
+            'entity' => $entity,
+            'fields' => $fields
+        );
+
+        $this->processFields($entity, $em);
+    }
+
+    /**
+     * After we have persisted the entities, we want to have the
+     * decrypted information available once more.
+     * @param PostFlushEventArgs $args
+     */
+    public function postFlush(PostFlushEventArgs $args)
+    {
+        $em = $args->getEntityManager();
+
+        foreach ($this->postFlushDecryptQueue as $pair) {
+            $fieldPairs = $pair['fields'];
+            $entity = $pair['entity'];
+
+            foreach ($fieldPairs as $fieldPair) {
+                /** @var \ReflectionProperty $field */
+                $field = $fieldPair['field'];
+
+                $field->setValue($entity, $fieldPair['value']);
+            }
+        }
+
+        unset($this->postFlushDecryptQueue);
+    }
+
     /**
      * Listen a postLoad lifecycle event. Checking and decrypt entities
      * which have @Encrypted annotations
@@ -108,8 +177,9 @@ class DoctrineEncryptSubscriber implements EventSubscriber
     public function getSubscribedEvents()
     {
         return array(
-            Events::preUpdate,
             Events::postLoad,
+            Events::onFlush,
+            Events::postFlush
         );
     }
     
@@ -139,8 +209,6 @@ class DoctrineEncryptSubscriber implements EventSubscriber
         $properties = $this->getEncryptedFields($entity, $em);
 
         foreach ($properties as $refProperty) {
-            // we have annotation and if it decrypt operation, we must avoid duble decryption
-            $refProperty->setAccessible(true);
             $value = $refProperty->getValue($entity);
 
             $value = $isEncryptOperation?
@@ -164,7 +232,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber
         $className = get_class($entity);
         $metadata = $em->getClassMetadata($className);
         $getter = 'get' . self::capitalize($metadata->getIdentifier());
-        
+
         return isset($this->decodedRegistry[$className][$entity->$getter()]);
     }
     
@@ -198,7 +266,10 @@ class DoctrineEncryptSubscriber implements EventSubscriber
 
         $encryptedFields = array();
         foreach ($meta->getReflectionProperties() as $refProperty) {
+            /** @var \ReflectionProperty $refProperty */
+
             if ($this->annReader->getPropertyAnnotation($refProperty, self::ENCRYPTED_ANN_NAME)) {
+                $refProperty->setAccessible(true);
                 $encryptedFields[] = $refProperty;
             }
         }
