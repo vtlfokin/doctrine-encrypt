@@ -6,6 +6,7 @@ use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\EventSubscriber;
 
 use Doctrine\ORM\Event\LifecycleEventArgs;
+use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Events;
@@ -37,7 +38,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber
 
     /**
      * Annotation reader
-     * @var Doctrine\Common\Annotations\Reader
+     * @var \Doctrine\Common\Annotations\Reader
      */
     private $annReader;
     
@@ -46,6 +47,14 @@ class DoctrineEncryptSubscriber implements EventSubscriber
      * @var array
      */
     private $decodedRegistry = array();
+
+    /**
+     * Caches information on an entity's encrypted fields in an array keyed on
+     * the entity's class name. The value will be a list of Reflected fields that are encrypted.
+     *
+     * @var array
+     */
+    private $encryptedFieldCache = array();
 
     /**
      * Initialization of subscriber
@@ -59,17 +68,6 @@ class DoctrineEncryptSubscriber implements EventSubscriber
     }
 
     /**
-     * Listen a prePersist lifecycle event. Checking and encrypt entities
-     * which have @Encrypted annotation
-     * @param LifecycleEventArgs $args 
-     */
-    public function prePersist(LifecycleEventArgs $args)
-    {
-        $entity = $args->getEntity();
-        $this->processFields($entity);
-    }
-
-    /**
      * Listen a preUpdate lifecycle event. Checking and encrypt entities fields
      * which have @Encrypted annotation. Using changesets to avoid preUpdate event
      * restrictions
@@ -77,8 +75,10 @@ class DoctrineEncryptSubscriber implements EventSubscriber
      */
     public function preUpdate(PreUpdateEventArgs $args)
     {
-        $reflectionClass = new ReflectionClass($args->getEntity());
-        $properties = $reflectionClass->getProperties();
+        $em = $args->getEntityManager();
+        $entity = $args->getEntity();
+
+        $properties = $this->getEncryptedFields($entity, $em);
         foreach ($properties as $refProperty) {
             if ($this->annReader->getPropertyAnnotation($refProperty, self::ENCRYPTED_ANN_NAME)) {
                 $propName = $refProperty->getName();
@@ -95,12 +95,13 @@ class DoctrineEncryptSubscriber implements EventSubscriber
     public function postLoad(LifecycleEventArgs $args)
     {
         $entity = $args->getEntity();
+        $em = $args->getEntityManager();
+
         if(!$this->hasInDecodedRegistry($entity, $args->getEntityManager())) {
-            if($this->processFields($entity, false)) {
+            if($this->processFields($entity, $em, false)) {
                 $this->addToDecodedRegistry($entity, $args->getEntityManager());
             }
         }
-        
     }
 
     /**
@@ -110,7 +111,6 @@ class DoctrineEncryptSubscriber implements EventSubscriber
     public function getSubscribedEvents()
     {
         return array(
-            Events::prePersist,
             Events::preUpdate,
             Events::postLoad,
         );
@@ -132,14 +132,15 @@ class DoctrineEncryptSubscriber implements EventSubscriber
 
     /**
      * Process (encrypt/decrypt) entities fields
-     * @param Obj $entity Some doctrine entity
-     * @param Boolean $isEncryptOperation If true - encrypt, false - decrypt entity 
+     * @param object $entity Some doctrine entity
+     * @param \Doctrine\ORM\EntityManager $em
+     * @param Boolean $isEncryptOperation If true - encrypt, false - decrypt entity
+     * @return bool
      */
-    private function processFields($entity, $isEncryptOperation = true)
+    private function processFields($entity, Entitymanager $em, $isEncryptOperation = true)
     {
-        $encryptorMethod = $isEncryptOperation ? 'encrypt' : 'decrypt';
-        $reflectionClass = new ReflectionClass($entity);
-        $properties = $reflectionClass->getProperties();
+        $properties = $this->getEncryptedFields($entity, $em);
+
         $withAnnotation = false;
         foreach ($properties as $refProperty) {
             if ($this->annReader->getPropertyAnnotation($refProperty, self::ENCRYPTED_ANN_NAME)) {
@@ -147,7 +148,11 @@ class DoctrineEncryptSubscriber implements EventSubscriber
                 // we have annotation and if it decrypt operation, we must avoid duble decryption
                 $refProperty->setAccessible(true);
                 $value = $refProperty->getValue($entity);
-                $value = $this->encryptor->$encryptorMethod($value);
+
+                $value = $isEncryptOperation?
+                    $this->encryptor->encrypt($value) :
+                    $this->encryptor->decrypt($value);
+
                 $refProperty->setValue($entity, $value);
             }
         }
@@ -181,5 +186,32 @@ class DoctrineEncryptSubscriber implements EventSubscriber
         $metadata = $em->getClassMetadata($className);
         $getter = 'get' . self::capitalize($metadata->getIdentifier());
         $this->decodedRegistry[$className][$entity->$getter()] = true;
+    }
+
+
+    /**
+     * @param $entity
+     * @param EntityManager $em
+     * @return \ReflectionProperty[]
+     */
+    private function getEncryptedFields($entity, EntityManager $em)
+    {
+        $className = get_class($entity);
+
+        if (isset($this->encryptedFieldCache[$className]))
+            return $this->encryptedFieldCache[$className];
+
+        $meta = $em->getClassMetadata($className);
+
+        $encryptedFields = array();
+        foreach ($meta->getReflectionProperties() as $refProperty) {
+            if ($this->annReader->getPropertyAnnotation($refProperty, self::ENCRYPTED_ANN_NAME)) {
+                $encryptedFields[] = $refProperty;
+            }
+        }
+
+        $this->encryptedFieldCache[$className] = $encryptedFields;
+
+        return $encryptedFields;
     }
 }
