@@ -1,5 +1,5 @@
 # DoctrineEncrypt
-![Build Status](https://travis-ci.org/51systems/doctrine-encrypt.svg?branch=master)
+[![Build Status](https://travis-ci.org/51systems/doctrine-encrypt.svg?branch=master)](https://travis-ci.org/51systems/doctrine-encrypt)
 
 Package encrypts and decrypts Doctrine fields through life cycle events. This version of the Doctrine Encrypt package
 distinguishes itself with the following features:
