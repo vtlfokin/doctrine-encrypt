@@ -136,17 +136,19 @@ class DoctrineEncryptSubscriber implements EventSubscriber
      */
     public function postFlush(PostFlushEventArgs $args)
     {
-        $em = $args->getEntityManager();
+        $unitOfWork = $args->getEntityManager()->getUnitOfWork();
 
         foreach ($this->postFlushDecryptQueue as $pair) {
             $fieldPairs = $pair['fields'];
-            $entity = $pair['entity'];
+            $entity     = $pair['entity'];
+            $oid        = spl_object_hash($entity);
 
             foreach ($fieldPairs as $fieldPair) {
                 /** @var \ReflectionProperty $field */
                 $field = $fieldPair['field'];
 
                 $field->setValue($entity, $fieldPair['value']);
+                $unitOfWork->setOriginalEntityProperty($oid, $field->getName(), $fieldPair['value']);
             }
 
             $this->addToDecodedRegistry($entity);
@@ -210,6 +212,9 @@ class DoctrineEncryptSubscriber implements EventSubscriber
     {
         $properties = $this->getEncryptedFields($entity, $em);
 
+        $unitOfWork = $em->getUnitOfWork();
+        $oid        = spl_object_hash($entity);
+
         foreach ($properties as $refProperty) {
             $value = $refProperty->getValue($entity);
 
@@ -218,6 +223,11 @@ class DoctrineEncryptSubscriber implements EventSubscriber
                 $this->encryptor->decrypt($value);
 
             $refProperty->setValue($entity, $value);
+
+            if (!$isEncryptOperation) {
+                //we don't want the object to be dirty immediately after reading
+                $unitOfWork->setOriginalEntityProperty($oid, $refProperty->getName(), $value);
+            }
         }
         
         return !empty($properties);
