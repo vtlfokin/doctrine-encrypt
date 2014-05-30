@@ -1,5 +1,5 @@
 {
-    "name": "reprovinci/doctrine-encrypt",
+    "name": "51systems/doctrine-encrypt",
     "type": "library",
     "keywords": ["doctrine", "aes256", "encrypt", "decrypt"],
     "license": "MIT",

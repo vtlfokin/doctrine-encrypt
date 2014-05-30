@@ -8,12 +8,12 @@ distinguishes itself with the following features:
 - Unit testing
 
 ## Installation
-Add `reprovinci/doctrine-encrypt` to your Composer manifest.
+Add `51systems/doctrine-encrypt` to your Composer manifest.
 
 ```js
 {
     "require": {
-        "reprovinci/doctrine-encrypt": "~3.0"
+        "51systems/doctrine-encrypt": "~3.0"
     }
 }
 ```
