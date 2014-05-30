@@ -24,7 +24,7 @@ $secret = pack("H*", "dda8e5b978e05346f08b312a8c2eac03670bb5661097f8bc13212c31be
 
 $subscriber = new DoctrineEncryptSubscriber(
     new \Doctrine\Common\Annotations\AnnotationReader,
-    new \Reprovinci\DoctrineEncrypt\Encryptors\AES256Encryptor($secret)
+    new \DoctrineEncrypt\Encryptors\AES256Encryptor($secret)
 );
 
 $eventManager = $em->getEventManager();
@@ -39,7 +39,7 @@ namespace Your\Namespace;
 
 use Doctrine\ORM\Mapping as ORM;
 
-use Reprovinci\DoctrineEncrypt\Configuration\Encrypted;
+use DoctrineEncrypt\Configuration\Encrypted;
 
 /**
  * @ORM\Entity

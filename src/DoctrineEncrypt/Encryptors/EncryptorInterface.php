@@ -1,6 +1,6 @@
 <?php
 
-namespace Reprovinci\DoctrineEncrypt\Encryptors;
+namespace DoctrineEncrypt\Encryptors;
 
 /**
  * Encryptor interface for encryptors

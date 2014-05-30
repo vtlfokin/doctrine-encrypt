@@ -10,13 +10,16 @@
         "ext-mcrypt": "*"
     },
     "autoload": {
-        "psr-0": { "Reprovinci\\DoctrineEncrypt": "" }
+        "psr-0": { "DoctrineEncrypt": "src" }
     },
-    "target-dir": "Reprovinci/DoctrineEncrypt",
     "authors": [
         {
             "name": "Victor Melnik",
             "email": "melnikvictorl@gmail.com"
+        },
+        {
+            "name": "Dustin Thomson",
+            "email": "dthomson@51systems.com"
         }
     ]
 }

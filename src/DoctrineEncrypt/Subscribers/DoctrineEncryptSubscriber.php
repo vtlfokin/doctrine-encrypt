@@ -1,6 +1,6 @@
 <?php
 
-namespace Reprovinci\DoctrineEncrypt\Subscribers;
+namespace DoctrineEncrypt\Subscribers;
 
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\EventSubscriber;
@@ -12,7 +12,7 @@ use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Events;
 
-use Reprovinci\DoctrineEncrypt\Encryptors\EncryptorInterface;
+use DoctrineEncrypt\Encryptors\EncryptorInterface;
 
 use ReflectionClass;
 
@@ -24,12 +24,12 @@ class DoctrineEncryptSubscriber implements EventSubscriber
     /**
      * Encryptor interface namespace 
      */
-    const ENCRYPTOR_INTERFACE_NS = 'Reprovinci\DoctrineEncrypt\Encryptors\EncryptorInterface';
+    const ENCRYPTOR_INTERFACE_NS = 'DoctrineEncrypt\Encryptors\EncryptorInterface';
     
     /**
      * Encrypted annotation full name
      */
-    const ENCRYPTED_ANN_NAME = 'Reprovinci\DoctrineEncrypt\Configuration\Encrypted';
+    const ENCRYPTED_ANN_NAME = 'DoctrineEncrypt\Configuration\Encrypted';
 
     /**
      * Encryptor

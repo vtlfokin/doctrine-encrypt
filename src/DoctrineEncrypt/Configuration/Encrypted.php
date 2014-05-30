@@ -1,6 +1,6 @@
 <?php
 
-namespace Reprovinci\DoctrineEncrypt\Configuration;
+namespace DoctrineEncrypt\Configuration;
 
 /**
  * The Encrypted class handles the @Encrypted annotation.

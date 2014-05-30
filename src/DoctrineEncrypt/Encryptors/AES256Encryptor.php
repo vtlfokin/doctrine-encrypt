@@ -1,6 +1,6 @@
 <?php
 
-namespace Reprovinci\DoctrineEncrypt\Encryptors;
+namespace DoctrineEncrypt\Encryptors;
 
 /**
  * Class for AES256 encryption
