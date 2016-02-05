@@ -31,6 +31,10 @@ class AES256Encryptor implements EncryptorInterface
      */
     public function encrypt($data)
     {
+        if (is_null($data)) {
+            return $data;
+        }
+
         return trim(
             base64_encode(
                 mcrypt_encrypt(
@@ -51,6 +55,10 @@ class AES256Encryptor implements EncryptorInterface
      */
     public function decrypt($data) 
     {
+        if (is_null($data)) {
+            return $data;
+        }
+
         return trim(
             mcrypt_decrypt(
                 MCRYPT_RIJNDAEL_256,

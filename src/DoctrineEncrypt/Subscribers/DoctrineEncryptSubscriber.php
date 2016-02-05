@@ -176,7 +176,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber
 
     /**
      * Realization of EventSubscriber interface method.
-     * @return Array Return all events which this subscriber is listening
+     * @return array Return all events which this subscriber is listening
      */
     public function getSubscribedEvents()
     {
