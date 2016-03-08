@@ -14,7 +14,8 @@ class AES256EncryptorTest extends \PHPUnit_Framework_TestCase
 
     public function testEncryptDecrypt()
     {
-        $e = new AES256Encryptor('testkey');
+        $sixteenChars = 'testkeywith16___';
+        $e = new AES256Encryptor($sixteenChars);
 
         $plainText = 'test-data';
 
@@ -26,7 +27,8 @@ class AES256EncryptorTest extends \PHPUnit_Framework_TestCase
 
     public function testEncryptDecryptNull()
     {
-        $e = new AES256Encryptor('testkey');
+        $sixteenChars = 'testkeywith16___';
+        $e = new AES256Encryptor($sixteenChars);
 
         $plainText = null;
 
@@ -38,7 +40,8 @@ class AES256EncryptorTest extends \PHPUnit_Framework_TestCase
 
     public function testEncryptDecryptEmpty()
     {
-        $e = new AES256Encryptor('testkey');
+        $sixteenChars = 'testkeywith16___';
+        $e = new AES256Encryptor($sixteenChars);
 
         $plainText = '';
 
