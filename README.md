@@ -14,7 +14,7 @@ Add `51systems/doctrine-encrypt` to your Composer manifest.
 ```js
 {
     "require": {
-        "51systems/doctrine-encrypt": "~4.0"
+        "51systems/doctrine-encrypt": "~5.0"
     }
 }
 ```
