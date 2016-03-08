@@ -96,18 +96,19 @@ class QueryAnalyzer implements SQLLogger
      * Dump the statistics of executed queries
      *
      * @param boolean $dumpOnlySql
-     * @return void
+     * @return string
      */
     public function getOutput($dumpOnlySql = false)
     {
         $output = '';
         if (!$dumpOnlySql) {
             $output .= 'Platform: ' . $this->platform->getName() . PHP_EOL;
-            $output .= 'Executed queries: ' . count($this->queries) . ', total time: ' . $this->totalExecutionTime . ' ms' . PHP_EOL;
+            $output .= 'Executed queries: ' . count($this->queries);
+            $output .= ', total time: ' . $this->totalExecutionTime . ' ms' . PHP_EOL;
         }
         foreach ($this->queries as $index => $sql) {
             if (!$dumpOnlySql) {
-                $output .= 'Query(' . ($index+1) . ') - ' . $this->queryExecutionTimes[$index] . ' ms' . PHP_EOL;
+                $output .= 'Query(' . ($index + 1) . ') - ' . $this->queryExecutionTimes[$index] . ' ms' . PHP_EOL;
             }
             $output .= $sql . ';' . PHP_EOL;
         }
@@ -189,7 +190,7 @@ class QueryAnalyzer implements SQLLogger
         $converted = $this->getConvertedParams($params, $types);
         if (is_int(key($params))) {
             $index = key($converted);
-            $sql = preg_replace_callback('@\?@sm', function($match) use (&$index, $converted) {
+            $sql = preg_replace_callback('@\?@sm', function ($match) use (&$index, $converted) {
                 return $converted[$index++];
             }, $sql);
         } else {

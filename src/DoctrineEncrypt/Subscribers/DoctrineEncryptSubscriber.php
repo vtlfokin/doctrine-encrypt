@@ -4,17 +4,12 @@ namespace DoctrineEncrypt\Subscribers;
 
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\EventSubscriber;
-
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
-use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Events;
-
 use DoctrineEncrypt\Encryptors\EncryptorInterface;
-
-use ReflectionClass;
 
 /**
  * Doctrine event subscriber which encrypt/decrypt entities
@@ -22,10 +17,10 @@ use ReflectionClass;
 class DoctrineEncryptSubscriber implements EventSubscriber
 {
     /**
-     * Encryptor interface namespace 
+     * Encryptor interface namespace
      */
     const ENCRYPTOR_INTERFACE_NS = 'DoctrineEncrypt\Encryptors\EncryptorInterface';
-    
+
     /**
      * Encrypted annotation full name
      */
@@ -33,7 +28,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber
 
     /**
      * Encryptor
-     * @var EncryptorInterface 
+     * @var EncryptorInterface
      */
     private $encryptor;
 
@@ -42,7 +37,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber
      * @var \Doctrine\Common\Annotations\Reader
      */
     private $annReader;
-    
+
     /**
      * Registr to avoid multi decode operations for one entity
      * @var array
@@ -63,7 +58,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber
      * we have to write the decrypted value back to the entity.
      * @var array
      */
-    private $postFlushDecryptQueue;
+    private $postFlushDecryptQueue = array();
 
     /**
      * Initialization of subscriber
@@ -114,16 +109,16 @@ class DoctrineEncryptSubscriber implements EventSubscriber
         $objId = spl_object_hash($entity);
 
         $fields = array();
-        foreach($this->getEncryptedFields($entity, $em) as $field) {
-            $fields[$field->getName()] = array (
+        foreach ($this->getEncryptedFields($entity, $em) as $field) {
+            $fields[$field->getName()] = array(
                 'field' => $field,
-                'value' => $field->getValue($entity)
+                'value' => $field->getValue($entity),
             );
         }
 
         $this->postFlushDecryptQueue[$objId] = array(
             'entity' => $entity,
-            'fields' => $fields
+            'fields' => $fields,
         );
 
         $this->processFields($entity, $em);
@@ -140,8 +135,8 @@ class DoctrineEncryptSubscriber implements EventSubscriber
 
         foreach ($this->postFlushDecryptQueue as $pair) {
             $fieldPairs = $pair['fields'];
-            $entity     = $pair['entity'];
-            $oid        = spl_object_hash($entity);
+            $entity = $pair['entity'];
+            $oid = spl_object_hash($entity);
 
             foreach ($fieldPairs as $fieldPair) {
                 /** @var \ReflectionProperty $field */
@@ -154,21 +149,21 @@ class DoctrineEncryptSubscriber implements EventSubscriber
             $this->addToDecodedRegistry($entity);
         }
 
-        unset($this->postFlushDecryptQueue);
+        $this->postFlushDecryptQueue = array();
     }
 
     /**
      * Listen a postLoad lifecycle event. Checking and decrypt entities
      * which have @Encrypted annotations
-     * @param LifecycleEventArgs $args 
+     * @param LifecycleEventArgs $args
      */
     public function postLoad(LifecycleEventArgs $args)
     {
         $entity = $args->getEntity();
         $em = $args->getEntityManager();
 
-        if(!$this->hasInDecodedRegistry($entity)) {
-            if($this->processFields($entity, $em, false)) {
+        if (!$this->hasInDecodedRegistry($entity)) {
+            if ($this->processFields($entity, $em, false)) {
                 $this->addToDecodedRegistry($entity);
             }
         }
@@ -183,10 +178,10 @@ class DoctrineEncryptSubscriber implements EventSubscriber
         return array(
             Events::postLoad,
             Events::onFlush,
-            Events::postFlush
+            Events::postFlush,
         );
     }
-    
+
     /**
      * Capitalize string
      * @param string $word
@@ -194,31 +189,31 @@ class DoctrineEncryptSubscriber implements EventSubscriber
      */
     public static function capitalize($word)
     {
-        if(is_array($word)) {
+        if (is_array($word)) {
             $word = $word[0];
         }
-        
+
         return str_replace(' ', '', ucwords(str_replace(array('-', '_'), ' ', $word)));
     }
 
     /**
      * Process (encrypt/decrypt) entities fields
      * @param object $entity Some doctrine entity
-     * @param \Doctrine\ORM\EntityManager $em
-     * @param Boolean $isEncryptOperation If true - encrypt, false - decrypt entity
+     * @param EntityManager $em
+     * @param bool $isEncryptOperation If true - encrypt, false - decrypt entity
      * @return bool
      */
-    private function processFields($entity, Entitymanager $em, $isEncryptOperation = true)
+    private function processFields($entity, EntityManager $em, $isEncryptOperation = true)
     {
         $properties = $this->getEncryptedFields($entity, $em);
 
         $unitOfWork = $em->getUnitOfWork();
-        $oid        = spl_object_hash($entity);
+        $oid = spl_object_hash($entity);
 
         foreach ($properties as $refProperty) {
             $value = $refProperty->getValue($entity);
 
-            $value = $isEncryptOperation?
+            $value = $isEncryptOperation ?
                 $this->encryptor->encrypt($value) :
                 $this->encryptor->decrypt($value);
 
@@ -229,20 +224,20 @@ class DoctrineEncryptSubscriber implements EventSubscriber
                 $unitOfWork->setOriginalEntityProperty($oid, $refProperty->getName(), $value);
             }
         }
-        
+
         return !empty($properties);
     }
-    
+
     /**
      * Check if we have entity in decoded registry
-     * @param Object $entity Some doctrine entity
+     * @param object $entity Some doctrine entity
      * @return boolean
      */
     private function hasInDecodedRegistry($entity)
     {
         return isset($this->decodedRegistry[spl_object_hash($entity)]);
     }
-    
+
     /**
      * Adds entity to decoded registry
      * @param object $entity Some doctrine entity
@@ -262,8 +257,9 @@ class DoctrineEncryptSubscriber implements EventSubscriber
     {
         $className = get_class($entity);
 
-        if (isset($this->encryptedFieldCache[$className]))
+        if (isset($this->encryptedFieldCache[$className])) {
             return $this->encryptedFieldCache[$className];
+        }
 
         $meta = $em->getClassMetadata($className);
 

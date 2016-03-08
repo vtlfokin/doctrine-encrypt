@@ -49,7 +49,10 @@ abstract class BaseTestCaseORM extends \PHPUnit_Framework_TestCase
      * database in memory
      *
      * @param EventManager $evm
+     * @param Configuration $config
      * @return EntityManager
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\Tools\ToolsException
      */
     protected function getMockSqliteEntityManager(EventManager $evm = null, Configuration $config = null)
     {
@@ -61,7 +64,7 @@ abstract class BaseTestCaseORM extends \PHPUnit_Framework_TestCase
         $config = null === $config ? $this->getMockAnnotatedConfig() : $config;
         $em = EntityManager::create($conn, $config, $evm ?: $this->getEventManager());
 
-        $schema = array_map(function($class) use ($em) {
+        $schema = array_map(function ($class) use ($em) {
             return $em->getClassMetadata($class);
         }, (array)$this->getUsedEntityFixtures());
 
@@ -86,7 +89,7 @@ abstract class BaseTestCaseORM extends \PHPUnit_Framework_TestCase
         $config = $this->getMockAnnotatedConfig();
         $em = EntityManager::create($conn, $config, $evm ?: $this->getEventManager());
 
-        $schema = array_map(function($class) use ($em) {
+        $schema = array_map(function ($class) use ($em) {
             return $em->getClassMetadata($class);
         }, (array)$this->getUsedEntityFixtures());
 
@@ -153,7 +156,7 @@ abstract class BaseTestCaseORM extends \PHPUnit_Framework_TestCase
         if ($this->queryAnalyzer) {
             $output = $this->queryAnalyzer->getOutput($dumpOnlySql);
             if ($writeToLog) {
-                $fileName = __DIR__.'/../../temp/query_debug_'.time().'.log';
+                $fileName = __DIR__ . '/../../temp/query_debug_' . time() . '.log';
                 if (($file = fopen($fileName, 'w+')) !== false) {
                     fwrite($file, $output);
                     fclose($file);
@@ -169,7 +172,7 @@ abstract class BaseTestCaseORM extends \PHPUnit_Framework_TestCase
     /**
      * Creates default mapping driver
      *
-     * @return \Doctrine\ORM\Mapping\Driver\Driver
+     * @return \Doctrine\ORM\Mapping\Driver\AnnotationDriver
      */
     protected function getMetadataDriverImplementation()
     {
@@ -228,58 +231,49 @@ abstract class BaseTestCaseORM extends \PHPUnit_Framework_TestCase
         $config
             ->expects($this->once())
             ->method('getProxyDir')
-            ->will($this->returnValue(__DIR__.'/../../temp'))
-        ;
+            ->will($this->returnValue(__DIR__ . '/../../temp'));
 
         $config
             ->expects($this->once())
             ->method('getProxyNamespace')
-            ->will($this->returnValue('Proxy'))
-        ;
+            ->will($this->returnValue('Proxy'));
 
         $config
             ->expects($this->once())
             ->method('getAutoGenerateProxyClasses')
-            ->will($this->returnValue(true))
-        ;
+            ->will($this->returnValue(true));
 
         $config
             ->expects($this->once())
             ->method('getClassMetadataFactoryName')
-            ->will($this->returnValue('Doctrine\\ORM\\Mapping\\ClassMetadataFactory'))
-        ;
+            ->will($this->returnValue('Doctrine\\ORM\\Mapping\\ClassMetadataFactory'));
 
         $mappingDriver = $this->getMetadataDriverImplementation();
 
         $config
             ->expects($this->any())
             ->method('getMetadataDriverImpl')
-            ->will($this->returnValue($mappingDriver))
-        ;
+            ->will($this->returnValue($mappingDriver));
 
         $config
             ->expects($this->any())
             ->method('getDefaultRepositoryClassName')
-            ->will($this->returnValue('Doctrine\\ORM\\EntityRepository'))
-        ;
+            ->will($this->returnValue('Doctrine\\ORM\\EntityRepository'));
 
         $config
             ->expects($this->any())
             ->method('getQuoteStrategy')
-            ->will($this->returnValue(new DefaultQuoteStrategy))
-        ;
+            ->will($this->returnValue(new DefaultQuoteStrategy));
 
         $config
             ->expects($this->any())
             ->method('getNamingStrategy')
-            ->will($this->returnValue(new DefaultNamingStrategy))
-        ;
+            ->will($this->returnValue(new DefaultNamingStrategy));
 
         $config
             ->expects($this->once())
             ->method('getRepositoryFactory')
-            ->will($this->returnValue(new DefaultRepositoryFactory))
-        ;
+            ->will($this->returnValue(new DefaultRepositoryFactory));
         return $config;
     }
 }

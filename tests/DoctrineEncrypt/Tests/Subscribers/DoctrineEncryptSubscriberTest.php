@@ -2,7 +2,6 @@
 
 namespace DoctrineEncrypt\Tests\Subscribers;
 
-
 use Doctrine\Common\EventManager;
 use DoctrineEncrypt\Subscribers\DoctrineEncryptSubscriber;
 use DoctrineEncrypt\Tests\Entity\User;
@@ -53,31 +52,6 @@ class DoctrineEncryptSubscriberTest extends BaseTestCaseORM
         $this->assertFalse($this->em->getUnitOfWork()->isScheduledForUpdate($user));
     }
 
-    public function testEmptyData()
-    {
-        {
-            $user = new User();
-            $user->setUsername('test');
-
-            $this->em->persist($user);
-
-            $this->assertEmpty($user->getPassword());
-            $this->em->flush();
-            $this->assertEmpty($user->getPassword());
-
-            $this->em->clear();
-        }
-
-        {
-            $stmt = $this->em->getConnection()->prepare('SELECT password FROM User u WHERE u.id=:userId');
-            $stmt->execute(array(':userId' => $user->getId()));
-
-            $result = $stmt->fetchColumn();
-
-            $this->assertEmpty($result);
-        }
-    }
-
     public function testCommit()
     {
         $password = 'test2';
@@ -109,7 +83,7 @@ class DoctrineEncryptSubscriberTest extends BaseTestCaseORM
     protected function getUsedEntityFixtures()
     {
         return array(
-            self::USER
+            self::USER,
         );
     }
 
@@ -125,4 +99,3 @@ class DoctrineEncryptSubscriberTest extends BaseTestCaseORM
         $this->userId = $user->getId();
     }
 }
- 

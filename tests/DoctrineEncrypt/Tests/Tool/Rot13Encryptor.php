@@ -2,7 +2,6 @@
 
 namespace DoctrineEncrypt\Tests\Tool;
 
-
 use DoctrineEncrypt\Encryptors\EncryptorInterface;
 
 class Rot13Encryptor implements EncryptorInterface

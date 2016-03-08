@@ -4,7 +4,7 @@ namespace DoctrineEncrypt\Encryptors;
 
 /**
  * Class for AES256 encryption
- * 
+ *
  * @author Victor Melnik <melnikvictorl@gmail.com>
  */
 class AES256Encryptor implements EncryptorInterface
@@ -17,7 +17,7 @@ class AES256Encryptor implements EncryptorInterface
 
     /**
      * Initialization of encryptor
-     * @param string $key 
+     * @param string $key
      */
     public function __construct($key)
     {
@@ -31,10 +31,6 @@ class AES256Encryptor implements EncryptorInterface
      */
     public function encrypt($data)
     {
-        if (is_null($data)) {
-            return $data;
-        }
-
         return trim(
             base64_encode(
                 mcrypt_encrypt(
@@ -51,14 +47,10 @@ class AES256Encryptor implements EncryptorInterface
     /**
      * Implementation of EncryptorInterface decrypt method
      * @param string $data
-     * @return string 
+     * @return string
      */
-    public function decrypt($data) 
+    public function decrypt($data)
     {
-        if (is_null($data)) {
-            return $data;
-        }
-
         return trim(
             mcrypt_decrypt(
                 MCRYPT_RIJNDAEL_256,
@@ -70,4 +62,3 @@ class AES256Encryptor implements EncryptorInterface
         );
     }
 }
-
