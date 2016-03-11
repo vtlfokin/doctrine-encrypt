@@ -52,6 +52,31 @@ class DoctrineEncryptSubscriberTest extends BaseTestCaseORM
         $this->assertFalse($this->em->getUnitOfWork()->isScheduledForUpdate($user));
     }
 
+    public function testEmptyData()
+    {
+        {
+            $user = new User();
+            $user->setUsername('test');
+
+            $this->em->persist($user);
+
+            $this->assertEmpty($user->getPassword());
+            $this->em->flush();
+            $this->assertEmpty($user->getPassword());
+
+            $this->em->clear();
+        }
+
+        {
+            $stmt = $this->em->getConnection()->prepare('SELECT password FROM User u WHERE u.id=:userId');
+            $stmt->execute(array(':userId' => $user->getId()));
+
+            $result = $stmt->fetchColumn();
+
+            $this->assertEmpty($result);
+        }
+    }
+
     public function testCommit()
     {
         $password = 'test2';
