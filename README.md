@@ -38,7 +38,7 @@ $subscriber = new DoctrineEncryptSubscriber(
 );
 
 $eventManager = $em->getEventManager();
-$eventManager->addEventSubscriber($encrypt_subscriber);
+$eventManager->addEventSubscriber($subscriber);
 ```
 
 ## Usage
