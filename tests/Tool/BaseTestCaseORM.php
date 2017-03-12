@@ -36,14 +36,6 @@ abstract class BaseTestCaseORM extends \PHPUnit_Framework_TestCase
     protected $queryAnalyzer;
 
     /**
-     * {@inheritdoc}
-     */
-    protected function setUp()
-    {
-
-    }
-
-    /**
      * EntityManager mock object together with
      * annotation mapping driver and pdo_sqlite
      * database in memory
@@ -109,12 +101,7 @@ abstract class BaseTestCaseORM extends \PHPUnit_Framework_TestCase
      */
     protected function getMockMappedEntityManager(EventManager $evm = null)
     {
-        $driver = $this->getMock('Doctrine\DBAL\Driver');
-        $driver->expects($this->once())
-            ->method('getDatabasePlatform')
-            ->will($this->returnValue($this->getMock('Doctrine\DBAL\Platforms\MySqlPlatform')));
-
-        $conn = $this->getMock('Doctrine\DBAL\Connection', array(), array(array(), $driver));
+        $conn = $this->createMock('Doctrine\DBAL\Connection');
         $conn->expects($this->once())
             ->method('getEventManager')
             ->will($this->returnValue($evm ?: $this->getEventManager()));
@@ -202,6 +189,7 @@ abstract class BaseTestCaseORM extends \PHPUnit_Framework_TestCase
         $evm->addEventSubscriber(new TranslatableListener);
         $evm->addEventSubscriber(new TimestampableListener);
         $evm->addEventSubscriber(new SoftDeleteableListener);
+
         return $evm;
     }
 
@@ -214,19 +202,7 @@ abstract class BaseTestCaseORM extends \PHPUnit_Framework_TestCase
     {
         // We need to mock every method except the ones which
         // handle the filters
-        $configurationClass = 'Doctrine\ORM\Configuration';
-        $refl = new \ReflectionClass($configurationClass);
-        $methods = $refl->getMethods();
-
-        $mockMethods = array();
-
-        foreach ($methods as $method) {
-            if ($method->name !== 'addFilter' && $method->name !== 'getFilterClassName') {
-                $mockMethods[] = $method->name;
-            }
-        }
-
-        $config = $this->getMock($configurationClass, $mockMethods);
+        $config = $this->createMock('Doctrine\ORM\Configuration');
 
         $config
             ->expects($this->once())
@@ -274,6 +250,7 @@ abstract class BaseTestCaseORM extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('getRepositoryFactory')
             ->will($this->returnValue(new DefaultRepositoryFactory));
+
         return $config;
     }
 }

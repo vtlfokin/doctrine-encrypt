@@ -6,7 +6,6 @@ use DoctrineEncrypt\Encryptors\EncryptorInterface;
 
 class Rot13Encryptor implements EncryptorInterface
 {
-
     /**
      * Must accept data and return encrypted data
      */
