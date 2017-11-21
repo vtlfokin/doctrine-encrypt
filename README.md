@@ -9,12 +9,12 @@ distinguishes itself with the following features:
 - Unit testing
 
 ## Installation
-Add `51systems/doctrine-encrypt` to your Composer manifest.
+Add `vtlfokin/doctrine-encrypt` to your Composer manifest.
 
 ```js
 {
     "require": {
-        "51systems/doctrine-encrypt": "~5.0"
+        "vtlfokin/doctrine-encrypt": "~5.0"
     }
 }
 ```

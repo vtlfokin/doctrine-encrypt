@@ -9,6 +9,7 @@ use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Events;
+use DoctrineEncrypt\Configuration\Encrypted;
 use DoctrineEncrypt\Encryptors\EncryptorInterface;
 
 /**
@@ -19,12 +20,12 @@ class DoctrineEncryptSubscriber implements EventSubscriber
     /**
      * Encryptor interface namespace
      */
-    const ENCRYPTOR_INTERFACE_NS = 'DoctrineEncrypt\Encryptors\EncryptorInterface';
+    const ENCRYPTOR_INTERFACE_NS = EncryptorInterface::class;
 
     /**
      * Encrypted annotation full name
      */
-    const ENCRYPTED_ANN_NAME = 'DoctrineEncrypt\Configuration\Encrypted';
+    const ENCRYPTED_ANN_NAME = Encrypted::class;
 
     /**
      * Encryptor
@@ -37,12 +38,6 @@ class DoctrineEncryptSubscriber implements EventSubscriber
      * @var \Doctrine\Common\Annotations\Reader
      */
     private $annReader;
-
-    /**
-     * Registr to avoid multi decode operations for one entity
-     * @var array
-     */
-    private $decodedRegistry = array();
 
     /**
      * Caches information on an entity's encrypted fields in an array keyed on
@@ -145,8 +140,6 @@ class DoctrineEncryptSubscriber implements EventSubscriber
                 $field->setValue($entity, $fieldPair['value']);
                 $unitOfWork->setOriginalEntityProperty($oid, $field->getName(), $fieldPair['value']);
             }
-
-            $this->addToDecodedRegistry($entity);
         }
 
         $this->postFlushDecryptQueue = array();
@@ -162,11 +155,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber
         $entity = $args->getEntity();
         $em = $args->getEntityManager();
 
-        if (!$this->hasInDecodedRegistry($entity)) {
-            if ($this->processFields($entity, $em, false)) {
-                $this->addToDecodedRegistry($entity);
-            }
-        }
+        $this->processFields($entity, $em, false);
     }
 
     /**
@@ -227,26 +216,6 @@ class DoctrineEncryptSubscriber implements EventSubscriber
 
         return !empty($properties);
     }
-
-    /**
-     * Check if we have entity in decoded registry
-     * @param object $entity Some doctrine entity
-     * @return boolean
-     */
-    private function hasInDecodedRegistry($entity)
-    {
-        return isset($this->decodedRegistry[spl_object_hash($entity)]);
-    }
-
-    /**
-     * Adds entity to decoded registry
-     * @param object $entity Some doctrine entity
-     */
-    private function addToDecodedRegistry($entity)
-    {
-        $this->decodedRegistry[spl_object_hash($entity)] = true;
-    }
-
 
     /**
      * @param $entity

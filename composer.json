@@ -1,5 +1,5 @@
 {
-    "name": "51systems/doctrine-encrypt",
+    "name": "vtlfokin/doctrine-encrypt",
     "type": "library",
     "keywords": ["doctrine", "aes256", "encrypt", "decrypt"],
     "license": "MIT",
@@ -8,7 +8,8 @@
     "require": {
         "php": ">=5.3.2",
         "doctrine/orm": "~2.0",
-        "ext-mcrypt": "*"
+        "ext-mcrypt": "*",
+        "ext-openssl": "*"
     },
 
     "require-dev": {
