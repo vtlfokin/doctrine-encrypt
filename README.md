@@ -34,7 +34,7 @@ $secret = pack("H*", "dda8e5b978e05346f08b312a8c2eac03670bb5661097f8bc13212c31be
 
 $subscriber = new DoctrineEncryptSubscriber(
     new \Doctrine\Common\Annotations\AnnotationReader,
-    new \DoctrineEncrypt\Encryptors\AES256Encryptor($secret)
+    new \DoctrineEncrypt\Encryptors\CI2BlowfishEncryptor($secret)
 );
 
 $eventManager = $em->getEventManager();

@@ -1,14 +1,13 @@
 {
     "name": "vtlfokin/doctrine-encrypt",
     "type": "library",
-    "keywords": ["doctrine", "aes256", "encrypt", "decrypt"],
+    "keywords": ["doctrine", "encrypt", "decrypt"],
     "license": "MIT",
     "description": "Package encrypts and decrypts Doctrine fields through life cycle events.",
 
     "require": {
         "php": ">=5.3.2",
         "doctrine/orm": "~2.0",
-        "ext-mcrypt": "*",
         "ext-openssl": "*"
     },
 

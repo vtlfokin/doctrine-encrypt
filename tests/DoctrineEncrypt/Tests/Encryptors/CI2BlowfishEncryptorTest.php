@@ -1,21 +1,19 @@
 <?php
 
 namespace DoctrineEncrypt\Tests\Encryptors;
-use DoctrineEncrypt\Encryptors\AES256Encryptor;
+use DoctrineEncrypt\Encryptors\CI2BlowfishEncryptor;
 
 /**
- * Created by PhpStorm.
- * User: dustin
- * Date: 04/02/16
- * Time: 5:50 PM
+ * Class CI2BlowfishEncryptorTest
+ * @package DoctrineEncrypt\Tests\Encryptors
  */
-class AES256EncryptorTest extends \PHPUnit_Framework_TestCase
+class CI2BlowfishEncryptorTest extends \PHPUnit_Framework_TestCase
 {
 
     public function testEncryptDecrypt()
     {
         $sixteenChars = 'testkeywith16___';
-        $e = new AES256Encryptor($sixteenChars);
+        $e = new CI2BlowfishEncryptor($sixteenChars);
 
         $plainText = 'test-data';
 
@@ -28,7 +26,7 @@ class AES256EncryptorTest extends \PHPUnit_Framework_TestCase
     public function testEncryptDecryptNull()
     {
         $sixteenChars = 'testkeywith16___';
-        $e = new AES256Encryptor($sixteenChars);
+        $e = new CI2BlowfishEncryptor($sixteenChars);
 
         $plainText = null;
 
@@ -41,7 +39,7 @@ class AES256EncryptorTest extends \PHPUnit_Framework_TestCase
     public function testEncryptDecryptEmpty()
     {
         $sixteenChars = 'testkeywith16___';
-        $e = new AES256Encryptor($sixteenChars);
+        $e = new CI2BlowfishEncryptor($sixteenChars);
 
         $plainText = '';
 
